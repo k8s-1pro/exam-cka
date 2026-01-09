@@ -19,6 +19,7 @@ Vagrant.configure("2") do |config|
       vb.customize ["modifyvm", :id, "--nested-hw-virt", "on"]
 	end
     master.vm.provision :shell, privileged: true, inline: $install_master
+    master.vm.provision :shell, privileged: true, inline: $exam_user
   end
 
 end
@@ -27,8 +28,7 @@ $install_default = <<-SHELL
 
 echo '======== [4] Rocky Linux 기본 설정 ========'
 echo '======== [4-1] 패키지 업데이트 ========'
-yum -y update --releasever=9.6
-
+#yum -y update --releasever=9
 
 echo '======== root 로그인 허용 체크 ========'
 sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
@@ -131,13 +131,13 @@ mkdir -p $HOME/.kube
 cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 chown $(id -u):$(id -g) $HOME/.kube/config
 
+echo '======== [8-3] Master 노드에 Pod 생성 허용 ========'
+kubectl taint nodes k8s-master node-role.kubernetes.io/control-plane:NoSchedule-
 
-echo '======== [8-3] Pod Network 설치 (calico) ========'
+echo '======== [8-4] Pod Network 설치 (calico) ========'
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/install/k8s-cluster-1.34/calico-3.31.1/operator-crds.yaml
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/install/k8s-cluster-1.34/calico-3.31.1/tigera-operator.yaml
-
-echo '======== [8-4] Master 노드에 Pod 생성 허용 ========'
-kubectl taint nodes k8s-master node-role.kubernetes.io/control-plane:NoSchedule-
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.31.3/manifests/custom-resources.yaml
 
 echo '======== [9] 쿠버네티스 편의기능 설치 ========'
 echo '======== [9-1] kubectl 자동완성 기능 ========'
@@ -145,44 +145,57 @@ echo "source <(kubectl completion bash)" >> ~/.bashrc
 echo 'alias k=kubectl' >>~/.bashrc
 echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
 
-echo '======== [9-2-1] Dashboard설치 ========'
-helm repo add k8s-dashboard https://kubernetes.github.io/dashboard
-helm pull k8s-dashboard/kubernetes-dashboard --version 7.14.0
-tar -xf kubernetes-dashboard-7.14.0.tgz
-curl -o ./kubernetes-dashboard/values-custom.yaml https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/install/k8s-cluster-1.34/kubernetes-dashboard-7.14.0/helm-7.14.0/values-custom.yaml
-helm upgrade --install kubernetes-dashboard ./kubernetes-dashboard -n kubernetes-dashboard --create-namespace -f ./kubernetes-dashboard/values-custom.yaml
-
-echo '======== [9-2-2] Dashboard Admin 접근 권한 생성 ========'
-kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/install/k8s-cluster-1.34/kubernetes-dashboard-7.14.0/serviceaccount.yaml
-kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/install/k8s-cluster-1.34/kubernetes-dashboard-7.14.0/clusterrolebinding.yaml
-kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/install/k8s-cluster-1.34/kubernetes-dashboard-7.14.0/secret.yaml
-
-echo '======== [10] 시험 환경 구성 ========'
-echo '======== [10-1] Helm 설치 ========'
+echo '======== [9-2] Helm 설치 ========'
 curl -O https://get.helm.sh/helm-v3.19.2-linux-amd64.tar.gz
 tar -zxvf helm-v3.19.2-linux-amd64.tar.gz
 mv linux-amd64/helm /usr/bin/helm
 
-echo '======== [10-2] Nginx 설치 ========'
+echo '======== [10] 시험 환경을 위한 오픈소스 설치 ========'
+echo '======== [10-1] Nginx 설치 ========'
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm pull ingress-nginx/ingress-nginx --version 4.13.4
 tar -xf ingress-nginx-4.13.4.tgz
 curl -o ./ingress-nginx/values-custom.yaml https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/install/k8s-cluster-1.34/ingress-nginx-1.13.4/helm-4.13.4/values-custom.yaml
 helm upgrade --install ingress-nginx ./ingress-nginx -n ingress-nginx --create-namespace -f ./ingress-nginx/values-custom.yaml &
 
-echo '======== [10-3] Gateway API 설치 ========'
+echo '======== [10-2] Gateway API 설치 ========'
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/install/k8s-cluster-1.34/gateway-api-1.4.0/standard-install.yaml
 
-echo '======== [10-4] Cert-Manager 설치 ========'
+echo '======== [10-3] Cert-Manager 설치 ========'
 helm repo add jetstack https://charts.jetstack.io
 helm install cert-manager jetstack/cert-manager --version 1.19.1 --namespace cert-manager --create-namespace --set featureGates="ExperimentalCertificateSigningRequestControllers=true" --set installCRDs=true &
 
-echo '======== [10-5] Storage 환경 세팅 ========'
-kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/storage/pvc-restore/storageclass.yaml
-kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/storage/pvc-restore/pv.yaml
-curl -O https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/storage/pvc-restore/mariadb-deploy.yaml
+
+echo '======== [2-1] Storage 환경 세팅 ========'
 curl -O https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/storage/pvc-restore/run.sh
 chmod +x run.sh
 sh run.sh
+
+SHELL
+
+$exam_user = <<-SHELL
+
+echo '======== [1] CKA 실습용 User 생성 ========'
+useradd -m -s /bin/bash cka0001
+echo "cka0001 ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/cka0001
+chmod 440 /etc/sudoers.d/cka0001
+
+echo '======== [1-1] CKA 실습용 kubectl 권한 설정 ========'
+mkdir -p /home/cka0001/.kube
+cp /etc/kubernetes/admin.conf /home/cka0001/.kube/config
+chown -R cka0001:cka0001 /home/cka0001/.kube
+chmod 600 /home/cka0001/.kube/config
+
+echo '======== [1-2] CKA 실습용 kubectl 자동 완성 ========'
+su - cka000001 -c 'echo "source <(kubectl completion bash)" >> ~/.bashrc'
+su - cka000001 -c 'echo "alias k=kubectl" >> ~/.bashrc'
+su - cka000001 -c 'echo "complete -o default -F __start_kubectl k" >> ~/.bashrc'
+
+echo '======== [2] 시험 문제를 위한 리소스 설치 ========'
+echo '======== [2-1] Storage 환경 세팅 ========'
+kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/storage/pvc-restore/storageclass.yaml
+kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/storage/pvc-restore/pv.yaml
+su - cka000001 -c 'mkdir -p ~/pvc-restore'
+su - cka000001 -c 'curl -o ~/pvc-restore/mariadb-deploy.yaml https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/storage/pvc-restore/mariadb-deploy.yaml'
 
 SHELL
