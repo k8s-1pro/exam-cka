@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx
+  name: nginx-static
   namespace: nginx-static
 spec:
   replicas: 1
@@ -25,7 +25,6 @@ spec:
             - name: nginx-ssl
               mountPath: /etc/nginx/ssl
               readOnly: true
-
       volumes:
         - name: nginx-config
           configMap:

@@ -15,7 +15,7 @@ data:
         ssl_certificate /etc/nginx/ssl/tls.crt;
         ssl_certificate_key /etc/nginx/ssl/tls.key;
 
-        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_protocols TLSv1.3;
         ssl_ciphers HIGH:!aNULL:!MD5;
 
         location / {
