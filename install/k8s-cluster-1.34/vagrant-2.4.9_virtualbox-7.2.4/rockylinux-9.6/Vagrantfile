@@ -165,11 +165,6 @@ echo '======== [10-3] Cert-Manager 설치 ========'
 helm repo add jetstack https://charts.jetstack.io
 helm install cert-manager jetstack/cert-manager --version 1.19.1 --namespace cert-manager --create-namespace --set featureGates="ExperimentalCertificateSigningRequestControllers=true" --set installCRDs=true &
 
-echo '======== [2-1] Storage 환경 세팅 ========'
-curl -O https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/storage/pvc-restore/run.sh
-chmod +x run.sh
-sh run.sh
-
 SHELL
 
 $exam_user = <<-SHELL
@@ -210,7 +205,13 @@ kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/
 
 
 echo '======== [2-2-configmap] pvc ========'
-#curl -o ./ingress-nginx/values-nginx.yaml https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/workloads-scheduling/configmap/values-nginx.yaml
-#helm upgrade --install ingress-config ./ingress-nginx -n nginx-static --create-namespace -f ./ingress-nginx/values-nginx.yaml &
+kubectl create ns nginx-static
+mkdir -p ~/configmap
+curl -o ~/configmap/tls.crt https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/workloads-scheduling/configmap/tls.crt
+curl -o ~/configmap/tls.key https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/workloads-scheduling/configmap/tls.key
+kubectl create secret tls nginx-tls --cert=~/configmap/tls.crt --key=~/configmap/tls.key -n nginx-static
+
+curl -o ./configmap/values-nginx.yaml https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/workloads-scheduling/configmap/values-nginx.yaml
+helm upgrade --install ingress-config ./ingress-nginx -n nginx-static -f ./configmap/values-nginx.yaml &
 
 SHELL
