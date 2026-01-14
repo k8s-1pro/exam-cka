@@ -19,7 +19,7 @@ data:
         ssl_ciphers HIGH:!aNULL:!MD5;
 
         location / {
-          return 200 "Hello TLS\n";
+          return 200 "OK\n";
         }
       }
     }
