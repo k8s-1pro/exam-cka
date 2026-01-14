@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apache-server
+  namespace: autoscale
+spec:
+  selector:
+    matchLabels:
+      run: apache-server
+  template:
+    metadata:
+      labels:
+        run: apache-server
+    spec:
+      containers:
+        - name: apache-server
+          image: registry.k8s.io/hpa-example
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: 50m
+              memory: 50Mi
+            requests:
+              cpu: 25m
+              memory: 30Mi

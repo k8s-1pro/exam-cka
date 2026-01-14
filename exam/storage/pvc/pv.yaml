@@ -7,11 +7,7 @@ spec:
     storage: 250Mi
   accessModes:
     - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Recycle
-  storageClassName: slow
-  claimRef:
-    kind: PersistentVolumeClaim
-    namespace: mariadb
-    name: mariadb
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-path
   hostPath:
     path: /mnt/data/mariadb
