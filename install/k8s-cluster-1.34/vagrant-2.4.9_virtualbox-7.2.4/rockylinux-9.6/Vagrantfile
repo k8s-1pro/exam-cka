@@ -203,15 +203,12 @@ echo '======== [2-2-hpa] pvc ========'
 kubectl create ns autoscale
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/workloads-scheduling/hpa/deployment.yaml
 
-
 echo '======== [2-2-configmap] pvc ========'
 kubectl create ns nginx-static
-mkdir -p ~/configmap
-curl -o ~/configmap/tls.crt https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/workloads-scheduling/configmap/tls.crt
-curl -o ~/configmap/tls.key https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/workloads-scheduling/configmap/tls.key
-kubectl create secret tls nginx-tls --cert=/root/configmap/tls.crt --key=/root/configmap/tls.key -n nginx-static
+kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/workloads-scheduling/configmap/configmap.yaml
+kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/workloads-scheduling/configmap/secret.yaml
+kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/workloads-scheduling/configmap/service.yaml
+kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/workloads-scheduling/configmap/deployment.yaml
 
-curl -o ./configmap/values-nginx.yaml https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/workloads-scheduling/configmap/values-nginx.yaml
-helm upgrade --install ingress-config ./ingress-nginx -n nginx-static -f ./configmap/values-nginx.yaml &
 
 SHELL
