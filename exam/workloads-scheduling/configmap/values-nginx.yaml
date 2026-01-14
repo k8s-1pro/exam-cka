@@ -16,4 +16,12 @@ controller:
     - name: TZ
       value: Asia/Seoul
 
+  extraArgs:
+    default-ssl-certificate: "nginx-static/nginx-tls"
+
+  config:
+    ssl-protocols: "TLSv1.2 TLSv1.3"
+    ssl-ciphers: "HIGH:!aNULL:!MD5"
+    ssl-prefer-server-ciphers: "off"
+
   replicaCount: 1
