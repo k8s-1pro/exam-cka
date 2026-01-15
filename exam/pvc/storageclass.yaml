@@ -4,4 +4,4 @@ metadata:
   name: local-path
 provisioner: hostpath.csi.k8s.io
 reclaimPolicy: Retain
-volumeBindingMode: WaitForFirstConsumer
+volumeBindingMode: Immediate
