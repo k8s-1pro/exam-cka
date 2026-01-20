@@ -6,11 +6,11 @@ metadata:
 spec:
   selector:
     matchLabels:
-      run: apache-server
+      app: apache-server
   template:
     metadata:
       labels:
-        run: apache-server
+        app: apache-server
     spec:
       containers:
         - name: apache-server

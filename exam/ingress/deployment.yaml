@@ -13,7 +13,7 @@ spec:
         app: echoserver
     spec:
       containers:
-        - name: echoserver-service
-          image: registry.k8s.io/echoserver
+        - name: echoserver
+          image: 1pro/exam
           ports:
             - containerPort: 8080
