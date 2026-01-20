@@ -203,7 +203,7 @@ echo '======== [2-2-hpa] pvc ========'
 kubectl create ns autoscale
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/workloads-scheduling/hpa/deployment.yaml
 
-echo '======== [2-2-configmap] pvc ========'
+echo '======== [2-2-configmap]  ========'
 kubectl create ns nginx-static
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/workloads-scheduling/configmap/configmap.yaml
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/exam-cka/main/exam/workloads-scheduling/configmap/secret.yaml
