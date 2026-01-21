@@ -1,0 +1,10 @@
+kind: Service
+metadata:
+  name: web
+  namespace: default
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: web
